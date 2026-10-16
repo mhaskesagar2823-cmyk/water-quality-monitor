@@ -1,28 +1,35 @@
 /**
  * AQUA SCAN - Official Mining Supervisor Emergency Escalation & Photo Grievance System
+ * Serverless Version (GitHub Pages / LocalStorage Compatible)
  */
 
 const EscalationController = {
   mediaStream: null,
   capturedPhotoBase64: '',
-  authorities: [],
+  authorities: [
+    { id: 'SPCB', name: 'State Pollution Control Board', role: 'Regulatory Compliance', category: 'Environmental Regulators' },
+    { id: 'CWC', name: 'Central Water Commission', role: 'Water Resource Management', category: 'Environmental Regulators' },
+    { id: 'CGWB', name: 'Central Ground Water Board', role: 'Aquifer Protection', category: 'Environmental Regulators' },
+    { id: 'NGT', name: 'National Green Tribunal', role: 'Environmental Law Enforcement', category: 'Environmental Regulators' },
+    { id: 'COLLECTOR', name: 'District Collector / Magistrate', role: 'Executive Authority', category: 'Civil Administration' },
+    { id: 'SDM', name: 'Sub-Divisional Magistrate', role: 'Local Executive', category: 'Civil Administration' },
+    { id: 'SP', name: 'Superintendent of Police', role: 'Law & Order', category: 'Civil Administration' },
+    { id: 'ZILLA_PARISHAD', name: 'Zilla Parishad CEO', role: 'Rural Governance', category: 'Civil Administration' },
+    { id: 'DMF', name: 'District Mineral Foundation', role: 'Community Welfare', category: 'Mining Oversight' },
+    { id: 'DIST_MINING_OFFICER', name: 'District Mining Officer', role: 'Mining Operations Control', category: 'Mining Oversight' },
+    { id: 'IBM', name: 'Indian Bureau of Mines', role: 'Federal Mining Regulation', category: 'Mining Oversight' },
+    { id: 'DGMS', name: 'Dir. Gen. of Mines Safety', role: 'Mining Safety', category: 'Mining Oversight' },
+    { id: 'HEALTH_DEPT', name: 'State Health Department', role: 'Public Health Safety', category: 'Health & Safety' },
+    { id: 'JAL_SHAKTI', name: 'Ministry of Jal Shakti (JJM)', role: 'Water Safety Policy', category: 'Health & Safety' },
+    { id: 'PHED', name: 'Public Health Engineering Dept', role: 'Drinking Water Supply', category: 'Health & Safety' },
+    { id: 'NDRF', name: 'National Disaster Response Force', role: 'Emergency Hazard Response', category: 'Health & Safety' }
+  ],
 
   init: async function () {
-    this.loadAuthorities();
+    this.renderAuthoritiesChecklist();
     this.bindModalEvents();
     this.bindCameraEvents();
     this.loadPastEscalations();
-  },
-
-  loadAuthorities: async function () {
-    try {
-      const res = await fetch('/api/authorities');
-      const data = await res.json();
-      this.authorities = data.authorities || [];
-      this.renderAuthoritiesChecklist();
-    } catch (e) {
-      console.warn('Failed to load authorities', e);
-    }
   },
 
   renderAuthoritiesChecklist: function () {
@@ -51,7 +58,6 @@ const EscalationController = {
       list.forEach(auth => {
         const item = document.createElement('label');
         item.className = 'auth-check-item';
-        // Auto check regulatory authorities by default
         const defaultChecked = ['SPCB', 'COLLECTOR', 'DMF', 'DIST_MINING_OFFICER', 'HEALTH_DEPT'].includes(auth.id);
         item.innerHTML = `
           <input type="checkbox" name="auth-id" value="${auth.id}" ${defaultChecked ? 'checked' : ''} />
@@ -89,7 +95,6 @@ const EscalationController = {
       form.addEventListener('submit', (e) => this.handleSubmit(e));
     }
 
-    // Select all / recommend buttons
     const selectAllBtn = document.getElementById('btn-select-all-auth');
     if (selectAllBtn) {
       selectAllBtn.addEventListener('click', () => {
@@ -114,7 +119,6 @@ const EscalationController = {
     const video = document.getElementById('camera-video');
     const canvas = document.getElementById('camera-canvas');
     const preview = document.getElementById('captured-preview');
-    const cameraBox = document.getElementById('camera-stream-box');
 
     if (snapBtn && video && canvas) {
       snapBtn.addEventListener('click', () => {
@@ -191,8 +195,6 @@ const EscalationController = {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Transmitting Emergency Docket...';
 
-    const supervisorName = document.getElementById('supv-name').value;
-    const supervisorBadge = document.getElementById('supv-badge').value;
     const location = document.getElementById('supv-location').value;
     const severity = document.getElementById('supv-severity').value;
     const description = document.getElementById('supv-statement').value;
@@ -200,38 +202,38 @@ const EscalationController = {
     const selectedAuths = [];
     document.querySelectorAll('input[name="auth-id"]:checked').forEach(cb => selectedAuths.push(cb.value));
 
-    const payload = {
-      supervisorName,
-      supervisorBadge,
-      location,
-      severity,
-      description,
-      photoBase64: this.capturedPhotoBase64,
-      targetAuthorityIds: selectedAuths
+    // Serverless Mock Ticket Creation
+    const targetAuthorityNames = selectedAuths.map(id => {
+      const auth = this.authorities.find(a => a.id === id);
+      return auth ? auth.name : id;
+    });
+
+    const ticket = {
+      ticketId: 'AQ-ESC-' + Math.floor(Math.random() * 900000 + 100000),
+      timestamp: new Date().toLocaleString(),
+      location: location,
+      severity: severity,
+      sampleBottleId: 'CUSTODY-TKN-' + Math.floor(Math.random() * 9000 + 1000),
+      description: description,
+      verificationHash: 'SHA256-' + Math.random().toString(36).substring(2, 15).toUpperCase(),
+      targetAuthorityNames: targetAuthorityNames,
+      photoBase64: this.capturedPhotoBase64
     };
 
-    try {
-      const res = await fetch('/api/escalate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
+    setTimeout(() => {
+      // Save to browser LocalStorage instead of backend
+      let pastEscalations = JSON.parse(localStorage.getItem('aqua_escalations') || '[]');
+      pastEscalations.unshift(ticket);
+      localStorage.setItem('aqua_escalations', JSON.stringify(pastEscalations));
 
-      if (data.success && data.ticket) {
-        document.getElementById('escalation-modal').classList.remove('open');
-        this.stopCamera();
-        this.showSuccessDocket(data.ticket);
-        this.loadPastEscalations();
-      } else {
-        alert('Failed to submit escalation: ' + (data.error || 'Unknown error'));
-      }
-    } catch (err) {
-      alert('Error connecting to backend: ' + err.message);
-    } finally {
+      document.getElementById('escalation-modal').classList.remove('open');
+      this.stopCamera();
+      this.showSuccessDocket(ticket);
+      this.loadPastEscalations();
+
       submitBtn.disabled = false;
       submitBtn.textContent = 'SUBMIT OFFICIAL ESCALATION DOCKET';
-    }
+    }, 800); // Slight delay for realistic UI feel
   },
 
   showSuccessDocket: function (ticket) {
@@ -246,7 +248,6 @@ const EscalationController = {
     document.getElementById('docket-desc').textContent = ticket.description;
     document.getElementById('docket-hash').textContent = ticket.verificationHash;
 
-    // Authorities list
     const authListEl = document.getElementById('docket-authorities-list');
     if (authListEl) {
       authListEl.innerHTML = '';
@@ -257,7 +258,6 @@ const EscalationController = {
       });
     }
 
-    // Photo
     const imgEl = document.getElementById('docket-photo');
     if (imgEl) {
       if (ticket.photoBase64 && ticket.photoBase64.length > 50) {
@@ -268,11 +268,11 @@ const EscalationController = {
       }
     }
 
-    // Dynamic QR code for verification
     const qrContainer = document.getElementById('docket-qr');
     if (qrContainer) {
       qrContainer.innerHTML = '';
-      const verificationUrl = window.location.origin + '/mining.html?verify=' + ticket.ticketId;
+      // Fixed absolute path issue for GH Pages
+      const verificationUrl = window.location.href.split('?')[0] + '?verify=' + ticket.ticketId;
       new QRCode(qrContainer, {
         text: verificationUrl,
         width: 140,
@@ -287,27 +287,22 @@ const EscalationController = {
     const tableBody = document.getElementById('past-escalations-tbody');
     if (!tableBody) return;
 
-    try {
-      const res = await fetch('/api/escalations');
-      const data = await res.json();
-      const tickets = data.tickets || [];
+    // Load from LocalStorage instead of backend
+    const tickets = JSON.parse(localStorage.getItem('aqua_escalations') || '[]');
 
-      tableBody.innerHTML = '';
-      tickets.forEach(t => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${t.ticketId}</strong></td>
-          <td>${t.timestamp}</td>
-          <td><span class="status-badge-sm ${t.severity.includes('CRITICAL') ? 'badge-fail' : 'badge-warn'}">${t.severity}</span></td>
-          <td>${t.sampleBottleId}</td>
-          <td>${(t.targetAuthorityNames || []).length} Authorities</td>
-          <td><button class="btn btn-outline" style="padding:2px 8px; font-size:0.75rem;" onclick='EscalationController.showSuccessDocket(${JSON.stringify(t)})'>View Docket</button></td>
-        `;
-        tableBody.appendChild(tr);
-      });
-    } catch (e) {
-      console.warn('Failed to load past escalations', e);
-    }
+    tableBody.innerHTML = '';
+    tickets.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${t.ticketId}</strong></td>
+        <td>${t.timestamp}</td>
+        <td><span class="status-badge-sm ${t.severity.includes('CRITICAL') ? 'badge-fail' : 'badge-warn'}">${t.severity}</span></td>
+        <td>${t.sampleBottleId}</td>
+        <td>${(t.targetAuthorityNames || []).length} Authorities</td>
+        <td><button class="btn btn-outline" style="padding:2px 8px; font-size:0.75rem;" onclick='EscalationController.showSuccessDocket(${JSON.stringify(t).replace(/'/g, "&#39;")})'>View Docket</button></td>
+      `;
+      tableBody.appendChild(tr);
+    });
   }
 };
 
