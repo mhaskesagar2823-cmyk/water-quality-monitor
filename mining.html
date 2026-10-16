@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQUA SCAN - Official Mining Authority SCADA & Escalation</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/mining.css">
+</head>
+<body class="mining-body">
+
+  <!-- SCADA Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon">⛏️</div>
+        <div>
+          <div class="brand-title">
+            AQUA SCAN <span style="color:#38bdf8;">SCADA</span>
+            <span class="brand-badge">MINING & INDUSTRIAL DIRECTED</span>
+          </div>
+          <div class="brand-sub">Continuous Real-Time Effluent Surveillance & Automatic Valve Protection</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/index.html" class="nav-link-btn">← Portal Hub</a>
+        <a href="/rural.html" class="nav-link-btn">🏫 Rural School View</a>
+        <button id="open-escalation-modal-btn" class="btn btn-danger" style="box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);">
+          🚨 Immediate Action Escalation
+        </button>
+        <div class="live-indicator" id="connection-badge">
+          <span class="live-dot"></span> SCADA Stream Active
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="mining-container">
+
+    <!-- Hazard Alert Banner (Dynamically shown on contamination) -->
+    <div class="hazard-banner" id="mining-hazard-banner" style="display: none;">
+      <div class="hazard-content">
+        <div class="hazard-icon">⚠️</div>
+        <div>
+          <div class="hazard-title">CRITICAL CONTAMINATION THRESHOLD BREACHED</div>
+          <div class="hazard-subtitle" id="hazard-text">
+            Toxic heavy metal runoff exceeds statutory BIS 10500 standard. Motorized ball valve locked down.
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-danger" onclick="document.getElementById('open-escalation-modal-btn').click()">
+        File Official Regulatory Docket →
+      </button>
+    </div>
+
+    <!-- Top SCADA Grid: WQI Dial, Valve Controls, Detachable Sample Unit -->
+    <div class="scada-top-grid">
+      
+      <!-- Card 1: WQI Engine -->
+      <div class="scada-card">
+        <div class="scada-card-header">
+          <span class="scada-card-title">Water Quality Index Engine (BIS 10500:2012)</span>
+          <span class="brand-badge">WAWQI Method</span>
+        </div>
+        <div class="wqi-dial-box">
+          <div class="wqi-circle">
+            <span class="wqi-num" id="scada-wqi-num">86</span>
+            <span class="wqi-label">WQI SCORE</span>
+          </div>
+          <div class="wqi-meta">
+            <h3 id="scada-water-status" style="color: #34d399;">SAFE</h3>
+            <p>Grade Classification: <strong id="scada-wqi-grade">A+ (Excellent)</strong></p>
+            <p style="margin-top:0.2rem;">Contamination Flag: <strong id="scada-contamination" style="color:#94a3b8;">NOT DETECTED</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Motorized Ball Valve Actuator -->
+      <div class="scada-card">
+        <div class="scada-card-header">
+          <span class="scada-card-title">Motorized Ball Valve</span>
+          <span class="valve-pill valve-open valve-state-text">OPEN</span>
+        </div>
+        <div class="actuator-status-box">
+          <span style="font-size:0.78rem; color:#94a3b8;">Automatic supply cutoff triggers on Heavy Metal &gt; 0.01 mg/L or Acid Runoff.</span>
+          <div class="valve-btn-group">
+            <button class="valve-btn active" data-valve-action="AUTO">AUTO</button>
+            <button class="valve-btn" data-valve-action="OPEN">FORCE OPEN</button>
+            <button class="valve-btn valve-btn-danger" data-valve-action="CLOSED">SHUTDOWN</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Detachable Sample Collection Unit -->
+      <div class="scada-card">
+        <div class="scada-card-header">
+          <span class="scada-card-title">Detachable Sample Unit</span>
+          <span class="status-badge-sm badge-pass" id="sample-pump-indicator">STANDBY</span>
+        </div>
+        <div class="actuator-status-box">
+          <span style="font-size:0.75rem; color:#94a3b8;">Custody Sample Bottle Token:</span>
+          <strong id="sample-token-text" style="font-family:monospace; color:#38bdf8; font-size:0.9rem;">Chamber Ready</strong>
+          <button class="btn btn-outline" id="trigger-sample-btn" style="color:#e2e8f0; border-color:#374151; font-size:0.8rem; padding:0.45rem;">
+            🧪 Capture Physical Sample (12V Pump)
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5 Real-Time Sensor Telemetry Cards -->
+    <h3 style="font-size: 1.1rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.75rem;">
+      Physical Sensor Array Telemetry (Hardware Bus)
+    </h3>
+    <div class="telemetry-grid">
+      
+      <!-- pH Sensor (SEN0161) -->
+      <div class="telemetry-card safe" id="card-telem-ph">
+        <div class="telem-top">
+          <span class="telem-name">Hydrogen-Ion Activity (pH)</span>
+          <span class="telem-sensor-id">SEN0161 [D34]</span>
+        </div>
+        <div class="telem-val-row">
+          <span class="telem-value" id="m-ph-val">7.2</span>
+          <span class="telem-unit">pH</span>
+        </div>
+        <span class="telem-range">Statutory Limit: 6.5 - 8.5 (BIS 10500)</span>
+        <div class="telem-meter-bar">
+          <div class="telem-meter-fill" id="m-ph-bar" style="width: 51%; background: #10b981;"></div>
+        </div>
+      </div>
+
+      <!-- Turbidity Sensor (SEN0189) -->
+      <div class="telemetry-card safe" id="card-telem-turb">
+        <div class="telem-top">
+          <span class="telem-name">Turbidity / Silt Suspensions</span>
+          <span class="telem-sensor-id">SEN0189 [D35]</span>
+        </div>
+        <div class="telem-val-row">
+          <span class="telem-value" id="m-turb-val">2.1</span>
+          <span class="telem-unit">NTU</span>
+        </div>
+        <span class="telem-range">Statutory Max: 5.0 NTU (Desirable: &lt; 1.0)</span>
+        <div class="telem-meter-bar">
+          <div class="telem-meter-fill" id="m-turb-bar" style="width: 42%; background: #10b981;"></div>
+        </div>
+      </div>
+
+      <!-- TDS Sensor (SEN0244) -->
+      <div class="telemetry-card safe" id="card-telem-tds">
+        <div class="telem-top">
+          <span class="telem-name">Total Dissolved Solids (TDS)</span>
+          <span class="telem-sensor-id">SEN0244 [D32]</span>
+        </div>
+        <div class="telem-val-row">
+          <span class="telem-value" id="m-tds-val">430</span>
+          <span class="telem-unit">mg/L (ppm)</span>
+        </div>
+        <span class="telem-range">Statutory Max: 500 mg/L (Max Permissible: 2000)</span>
+        <div class="telem-meter-bar">
+          <div class="telem-meter-fill" id="m-tds-bar" style="width: 43%; background: #10b981;"></div>
+        </div>
+      </div>
+
+      <!-- DS18B20 Temp Probe -->
+      <div class="telemetry-card safe" id="card-telem-temp">
+        <div class="telem-top">
+          <span class="telem-name">Water Temperature</span>
+          <span class="telem-sensor-id">DS18B20 [D33]</span>
+        </div>
+        <div class="telem-val-row">
+          <span class="telem-value" id="m-temp-val">26.5</span>
+          <span class="telem-unit">°C</span>
+        </div>
+        <span class="telem-range">Thermal Benchmark: 20.0 - 30.0 °C</span>
+        <div class="telem-meter-bar">
+          <div class="telem-meter-fill" id="m-temp-bar" style="width: 53%; background: #06b6d4;"></div>
+        </div>
+      </div>
+
+      <!-- Heavy Metal / Colorimetric Module -->
+      <div class="telemetry-card safe" id="card-telem-metal">
+        <div class="telem-top">
+          <span class="telem-name">Heavy Metal Toxicity (Pb/As/Cd)</span>
+          <span class="telem-sensor-id">COLORIMETRIC [D4]</span>
+        </div>
+        <div class="telem-val-row">
+          <span class="telem-value" id="m-metal-val">0.008</span>
+          <span class="telem-unit">mg/L</span>
+        </div>
+        <span class="telem-range">STRICT CUTOFF: &lt; 0.010 mg/L</span>
+        <div class="telem-meter-bar">
+          <div class="telem-meter-fill" id="m-metal-bar" style="width: 40%; background: #10b981;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Statutory Compliance Table: BIS 10500:2012 -->
+    <div class="compliance-section">
+      <div class="scada-card-header">
+        <span class="scada-card-title">Bureau of Indian Standards (BIS 10500:2012) & WHO Regulatory Audit Matrix</span>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.3rem 0.8rem; color:#fff;" onclick="window.print()">
+          🖨️ Export Audit Report
+        </button>
+      </div>
+      <table class="compliance-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Sensor Model & Pin</th>
+            <th>BIS 10500 Acceptable</th>
+            <th>BIS Max Permissible</th>
+            <th>Real-Time Telemetry</th>
+            <th>Regulatory Compliance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="comp-ph">
+            <td><strong>pH (Acidity/Alkalinity)</strong></td>
+            <td>SEN0161 (Analog D34)</td>
+            <td>6.5 - 8.5</td>
+            <td>No Relaxation</td>
+            <td id="comp-ph-val">7.2</td>
+            <td><span class="status-badge-sm badge-pass" id="comp-ph-badge">COMPLIANT</span></td>
+          </tr>
+          <tr id="comp-turb">
+            <td><strong>Turbidity (Silt / Particulates)</strong></td>
+            <td>SEN0189 (Analog D35)</td>
+            <td>1.0 NTU</td>
+            <td>5.0 NTU</td>
+            <td id="comp-turb-val">2.1 NTU</td>
+            <td><span class="status-badge-sm badge-pass" id="comp-turb-badge">COMPLIANT</span></td>
+          </tr>
+          <tr id="comp-tds">
+            <td><strong>Total Dissolved Solids</strong></td>
+            <td>SEN0244 (Analog D32)</td>
+            <td>500 mg/L</td>
+            <td>2000 mg/L</td>
+            <td id="comp-tds-val">430 mg/L</td>
+            <td><span class="status-badge-sm badge-pass" id="comp-tds-badge">COMPLIANT</span></td>
+          </tr>
+          <tr id="comp-temp">
+            <td><strong>Temperature Probe</strong></td>
+            <td>DS18B20 (OneWire D33)</td>
+            <td>Ambient (20-30°C)</td>
+            <td>Thermal Shock &gt; 35°C</td>
+            <td id="comp-temp-val">26.5 °C</td>
+            <td><span class="status-badge-sm badge-pass" id="comp-temp-badge">COMPLIANT</span></td>
+          </tr>
+          <tr id="comp-metal">
+            <td><strong>Heavy Metal Ion Concentration</strong></td>
+            <td>Colorimetric Sensor (D4)</td>
+            <td>&lt; 0.010 mg/L</td>
+            <td>STRICT THRESHOLD</td>
+            <td id="comp-metal-val">0.008 mg/L</td>
+            <td><span class="status-badge-sm badge-pass" id="comp-metal-badge">COMPLIANT</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Past Escalation Dockets History -->
+    <div class="compliance-section">
+      <div class="scada-card-header">
+        <span class="scada-card-title">Emergency Escalation Incident History (Chain-of-Custody Dockets)</span>
+      </div>
+      <table class="compliance-table">
+        <thead>
+          <tr>
+            <th>Ticket ID</th>
+            <th>Timestamp</th>
+            <th>Severity</th>
+            <th>Sample Bottle ID</th>
+            <th>Dispatched To</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="past-escalations-tbody">
+          <!-- Populated by escalation.js -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Interactive SIH Demo Simulator Bar -->
+  <div class="simulator-bar no-print">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <span style="font-size:0.85rem; font-weight:800; color:#38bdf8;">🧪 SIH Presentation Scenarios:</span>
+    </div>
+    <div class="sim-controls-group">
+      <button class="sim-btn active" data-preset="NORMAL_SAFE">1. Safe Drinking Water (Benchmark WQI 86)</button>
+      <button class="sim-btn" data-preset="MONSOON_SILT">2. Monsoon Silt (Turbidity: 16.5 NTU)</button>
+      <button class="sim-btn" data-preset="MINING_TOXIC_LEAK" style="border-color:#f87171; color:#f87171;">
+        3. Mining Acid & Heavy Metals (VALVE AUTO CUTOFF!)
+      </button>
+      <button class="sim-btn" data-preset="SALINE_INTRUSION">4. High Salinity (TDS: 1580 mg/L)</button>
+    </div>
+  </div>
+
+  <!-- MODAL 1: Immediate Action Escalation Form with Camera & 16 Authorities -->
+  <div class="modal-backdrop" id="escalation-modal">
+    <div class="modal-container">
+      <div style="background:#0f172a; color:#fff; padding:1.25rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-top-left-radius:var(--radius-lg); border-top-right-radius:var(--radius-lg);">
+        <h3 style="font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          🚨 Official Mining Incident Escalation & Multi-Authority Dispatch
+        </h3>
+        <button id="close-escalation-modal-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <form id="escalation-form" style="padding:1.5rem;">
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:700; color:#334155;">Supervisor In-Charge Name</label>
+            <input type="text" id="supv-name" required value="Er. Rajesh Sharma" style="width:100%; padding:0.55rem; border:1px solid #cbd5e1; border-radius:var(--radius-sm); margin-top:0.25rem;" />
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:700; color:#334155;">Supervisor Badge ID / Directorate Reg.</label>
+            <input type="text" id="supv-badge" required value="MIN-SUPV-0941" style="width:100%; padding:0.55rem; border:1px solid #cbd5e1; border-radius:var(--radius-sm); margin-top:0.25rem;" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:700; color:#334155;">Contamination Location / Outfall Coordinates</label>
+            <input type="text" id="supv-location" required value="Sector 4 Tailings Pond Discharge Line (Kudremukh Outfall)" style="width:100%; padding:0.55rem; border:1px solid #cbd5e1; border-radius:var(--radius-sm); margin-top:0.25rem;" />
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:700; color:#334155;">Incident Severity Level</label>
+            <select id="supv-severity" style="width:100%; padding:0.55rem; border:1px solid #cbd5e1; border-radius:var(--radius-sm); margin-top:0.25rem; font-weight:700;">
+              <option value="CRITICAL_HAZARD" selected>CRITICAL HAZARD (Immediate Danger)</option>
+              <option value="HIGH_RISK">HIGH RISK (Threshold Exceeded)</option>
+              <option value="MODERATE_WARNING">MODERATE WARNING</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Camera & Photo Capture Box -->
+        <div style="margin-bottom:1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:var(--radius-md); padding:1rem;">
+          <label style="font-size:0.88rem; font-weight:800; color:#0f172a; display:block; margin-bottom:0.5rem;">
+            📸 Real-Time Photographic Evidence (Camera / File Upload)
+          </label>
+          <div class="camera-box" id="camera-stream-box">
+            <video id="camera-video" autoplay playsinline style="max-height:180px; margin:0 auto;"></video>
+            <canvas id="camera-canvas" style="display:none;"></canvas>
+            <img id="captured-preview" style="display:none; max-height:180px; margin:0 auto; border:2px solid #10b981;" />
+          </div>
+          <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
+            <button type="button" class="btn btn-primary" id="btn-camera-snap" style="font-size:0.85rem; padding:0.4rem 1rem;">
+              📷 Capture Live Photo
+            </button>
+            <label class="btn btn-outline" style="font-size:0.85rem; padding:0.4rem 1rem; cursor:pointer;">
+              📁 Upload Photo File
+              <input type="file" id="photo-file-input" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Supervisor Observations Statement -->
+        <div style="margin-bottom:1rem;">
+          <label style="font-size:0.85rem; font-weight:700; color:#334155;">Supervisor Technical Observations & Urgent Action Demand</label>
+          <textarea id="supv-statement" rows="3" required style="width:100%; padding:0.55rem; border:1px solid #cbd5e1; border-radius:var(--radius-sm); margin-top:0.25rem;">Severe acid runoff detected near community water intake. Heavy metal ion sensor tripped emergency ball valve. 100ml forensic sample isolated into detachable chamber. Immediate regulatory intervention, SPCB site inspection and DMF drinking water deployment requested.</textarea>
+        </div>
+
+        <!-- 16 Government Authorities Directory Selector -->
+        <div style="margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <label style="font-size:0.88rem; font-weight:800; color:#0f172a;">
+              🏛️ Select Statutory Authorities for Emergency Action Dispatch (16 Official Bodies)
+            </label>
+            <div style="display:flex; gap:0.5rem;">
+              <button type="button" class="btn btn-outline" id="btn-select-rec-auth" style="padding:2px 8px; font-size:0.72rem;">
+                Select Recommended (Mining & Safety)
+              </button>
+              <button type="button" class="btn btn-outline" id="btn-select-all-auth" style="padding:2px 8px; font-size:0.72rem;">
+                Select All 16
+              </button>
+            </div>
+          </div>
+
+          <div class="authority-picker-grid" id="authority-picker-list">
+            <!-- Rendered by escalation.js with all 16 authorities requested -->
+          </div>
+        </div>
+
+        <div style="text-align:right; border-top:1px solid #e2e8f0; padding-top:1rem;">
+          <button type="submit" id="submit-escalation-btn" class="btn btn-danger" style="padding:0.75rem 1.75rem; font-size:1rem; font-weight:800;">
+            SUBMIT OFFICIAL ESCALATION DOCKET
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Generated Official Docket View (Printable / Verification QR) -->
+  <div class="modal-backdrop" id="docket-view-modal">
+    <div class="modal-container printable-card" style="padding:2rem;">
+      <div style="border-bottom: 2px solid #0f172a; padding-bottom:1rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:0.8rem; font-weight:800; color:#dc2626; text-transform:uppercase;">
+            GOVERNMENT STATUTORY REGULATORY FILING • SIH26218
+          </span>
+          <h2 style="font-size:1.6rem; font-weight:900; color:#0f172a;">
+            INCIDENT ESCALATION DOCKET: <span id="docket-id">AQ-ESC-849201</span>
+          </h2>
+          <span style="font-size:0.85rem; color:#64748b;">Project AQUA SCAN • Embedded Minds</span>
+        </div>
+        <div id="docket-qr" style="text-align:center;"></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1.25rem; font-size:0.9rem;">
+        <div><strong>Filing Timestamp:</strong> <span id="docket-time"></span></div>
+        <div><strong>Severity Status:</strong> <span id="docket-severity" class="status-badge-sm badge-fail"></span></div>
+        <div><strong>Incident Location:</strong> <span id="docket-location"></span></div>
+        <div><strong>Detachable Sample Bottle ID:</strong> <span id="docket-sample-id" style="font-family:monospace; font-weight:bold; color:#0284c7;"></span></div>
+        <div style="grid-column: 1 / -1;"><strong>Digital Tamper Hash:</strong> <span id="docket-hash" style="font-family:monospace;"></span></div>
+      </div>
+
+      <div style="margin-bottom:1.25rem;">
+        <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-bottom:0.25rem;">Supervisor Statement & Technical Findings:</h4>
+        <p id="docket-desc" style="font-size:0.9rem; color:#334155; background:#f8fafc; padding:0.75rem; border-radius:var(--radius-sm); border:1px solid #e2e8f0; line-height:1.5;"></p>
+      </div>
+
+      <div style="margin-bottom:1.25rem; text-align:center;">
+        <img id="docket-photo" style="max-height:220px; border-radius:var(--radius-sm); border:1px solid #cbd5e1; display:none; margin:0 auto;" />
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-bottom:0.5rem;">Statutory Authorities Dispatched & Notified:</h4>
+        <ul id="docket-authorities-list" style="font-size:0.85rem; color:#475569; padding-left:1.5rem; line-height:1.6;"></ul>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:1rem; border-top:1px solid #e2e8f0; padding-top:1rem;" class="no-print">
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="btn btn-primary" onclick="document.getElementById('docket-view-modal').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/qrcode.min.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/escalation.js"></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQUA SCAN - Rural School Water Safety Report</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/rural.css">
+</head>
+<body class="rural-body">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon">🏫</div>
+        <div>
+          <div class="brand-title">
+            AQUA SCAN
+            <span class="brand-badge">RURAL SCHOOL PORTAL</span>
+          </div>
+          <div class="brand-sub">Daily Water Safety & Drinkability Surveillance</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/index.html" class="nav-link-btn">← Switch Mode</a>
+        <a href="/mining.html" class="nav-link-btn">Mining SCADA →</a>
+        <button class="btn btn-outline" style="color:#fff; border-color:rgba(255,255,255,0.3);" onclick="window.print()">
+          🖨️ Print School Report
+        </button>
+        <div class="live-indicator" id="connection-badge">
+          <span class="live-dot"></span> Live Telemetry
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="rural-container">
+
+    <!-- School Header Banner -->
+    <div class="school-banner">
+      <div class="school-info">
+        <h1>Government Primary & Middle School</h1>
+        <p>Ward #4 Drinking Water Overhead Tank & Filtration Line (Jal Jeevan Mission Monitored)</p>
+        <div class="school-meta-pills">
+          <span class="meta-pill">📍 Location: Gram Panchayat Kudremukh</span>
+          <span class="meta-pill">🕒 Last Tested: Live Stream (Every 2s)</span>
+          <span class="meta-pill">🛡️ Standard: BIS 10500 Compliant</span>
+        </div>
+      </div>
+      <div class="school-qr-badge">
+        <img src="/api/qr/rural" alt="School Notice QR Code" />
+        <span>Scan for Today's Safety</span>
+      </div>
+    </div>
+
+    <!-- Big Drinkability Status Card -->
+    <div class="hero-verdict-card status-safe" id="rural-hero-card">
+      <div class="verdict-emoji" id="rural-emoji">😊</div>
+      <h2 class="verdict-title" id="rural-verdict-title">SAFE TO DRINK</h2>
+      <p class="verdict-desc" id="rural-verdict-desc">
+        ✅ Pure and Safe! Water meets all drinking standards. Perfectly safe for children, school kitchen & mid-day meals.
+      </p>
+
+      <div class="hero-stats-row">
+        <div class="stat-box">
+          <span class="stat-label">Water Quality Index</span>
+          <span class="stat-val-large" id="rural-wqi-score">86/100</span>
+          <span style="font-size:0.75rem; color:#047857; font-weight:700;">Grade A+ (Excellent)</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Hygiene & Safety Rating</span>
+          <span class="stat-val-large" style="font-size: 1.5rem; color:#f59e0b;" id="rural-stars">⭐⭐⭐⭐⭐ (4.8/5.0)</span>
+          <span style="font-size:0.75rem; color:#64748b;">Child Health Approved</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Automatic Water Valve</span>
+          <span class="valve-pill valve-open valve-state-text">OPEN</span>
+          <span style="font-size:0.75rem; color:#64748b;">Continuous Supply Flow</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 Parameters Explained in Friendly Everyday Terms -->
+    <h3 class="section-title">💧 Today's Water Quality Breakdown</h3>
+    <div class="sensor-grid-friendly">
+      
+      <!-- pH -->
+      <div class="friendly-card">
+        <div class="card-icon-top">🍋</div>
+        <div class="friendly-card-title">Acidity & Sweetness</div>
+        <div class="friendly-card-subtitle">pH Sensor (SEN0161)</div>
+        <div class="friendly-val" id="rural-ph-val">7.2</div>
+        <span class="friendly-unit">pH Scale (6.5 - 8.5)</span>
+        <div><span class="friendly-status-chip chip-good" id="rural-ph-chip">Normal & Gentle</span></div>
+      </div>
+
+      <!-- Turbidity -->
+      <div class="friendly-card">
+        <div class="card-icon-top">✨</div>
+        <div class="friendly-card-title">Water Clearness</div>
+        <div class="friendly-card-subtitle">Turbidity Sensor (SEN0189)</div>
+        <div class="friendly-val" id="rural-turb-val">2.1 NTU</div>
+        <span class="friendly-unit">Acceptable &lt; 5 NTU</span>
+        <div><span class="friendly-status-chip chip-good" id="rural-turb-chip">Clean & Filtered</span></div>
+      </div>
+
+      <!-- TDS -->
+      <div class="friendly-card">
+        <div class="card-icon-top">🧂</div>
+        <div class="friendly-card-title">Mineral Content (TDS)</div>
+        <div class="friendly-card-subtitle">TDS Sensor (SEN0244)</div>
+        <div class="friendly-val" id="rural-tds-val">430 mg/L</div>
+        <span class="friendly-unit">Sweet Spot &lt; 500 mg/L</span>
+        <div><span class="friendly-status-chip chip-good" id="rural-tds-chip">Balanced Minerals</span></div>
+      </div>
+
+      <!-- Temperature -->
+      <div class="friendly-card">
+        <div class="card-icon-top">🌡️</div>
+        <div class="friendly-card-title">Water Temperature</div>
+        <div class="friendly-card-subtitle">Metal Probe (DS18B20)</div>
+        <div class="friendly-val" id="rural-temp-val">26.5 °C</div>
+        <span class="friendly-unit">Optimal Comfort</span>
+        <div><span class="friendly-status-chip chip-good" id="rural-temp-chip">Optimal Cool</span></div>
+      </div>
+
+      <!-- Heavy Metals -->
+      <div class="friendly-card">
+        <div class="card-icon-top">🛡️</div>
+        <div class="friendly-card-title">Toxin & Chemical Safety</div>
+        <div class="friendly-card-subtitle">Heavy Metal Sensor</div>
+        <div class="friendly-val" id="rural-metal-val">0.008 mg/L</div>
+        <span class="friendly-unit">Strict Limit &lt; 0.010 mg/L</span>
+        <div><span class="friendly-status-chip chip-good" id="rural-metal-chip">Zero Toxic Runoff</span></div>
+      </div>
+
+    </div>
+
+    <!-- Health & Hygiene Advice for School Staff -->
+    <div class="guidance-box">
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: #065f46;">
+        🌱 School Hygiene & Drinking Guidelines (JJM & Health Mission)
+      </h3>
+      <div class="guidance-grid">
+        <div class="guidance-item">
+          <div class="guidance-icon">🍲</div>
+          <div class="guidance-text">
+            <h4>Mid-Day Meal Cooking</h4>
+            <p>Water is completely safe for direct vegetable washing, rice preparation, and drinking cups.</p>
+          </div>
+        </div>
+        <div class="guidance-item">
+          <div class="guidance-icon">🧼</div>
+          <div class="guidance-text">
+            <h4>Handwashing & Storage</h4>
+            <p>Keep storage drums covered with clean lids. Clean the school overhead tank once every 3 months.</p>
+          </div>
+        </div>
+        <div class="guidance-item">
+          <div class="guidance-icon">🚨</div>
+          <div class="guidance-text">
+            <h4>Automatic Cutoff Warning</h4>
+            <p>If the red alert sounds, the AquaScan motorized valve shuts off supply automatically. Use reserved boiled water.</p>
+          </div>
+        </div>
+        <div class="guidance-item">
+          <div class="guidance-icon">📞</div>
+          <div class="guidance-text">
+            <h4>Emergency Jal Jeevan Helpline</h4>
+            <p>Toll-free 1800-180-5678 (Jal Jeevan Mission) or contact Gram Panchayat Paani Samiti supervisor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Quick Demo Simulator Bar for Presentations -->
+  <div class="simulator-bar no-print">
+    <div style="font-size: 0.85rem; font-weight: 800; color: #38bdf8; display:flex; align-items:center; gap:0.4rem;">
+      <span>🧪 SIH Demo Test Scenarios:</span>
+    </div>
+    <div class="sim-controls-group">
+      <button class="sim-btn active" data-preset="NORMAL_SAFE">Safe Water (Benchmark WQI: 86)</button>
+      <button class="sim-btn" data-preset="MONSOON_SILT">Monsoon Silt (High Turbidity)</button>
+      <button class="sim-btn" data-preset="MINING_TOXIC_LEAK">Mining Acid & Toxic Leak (Auto Valve Trip!)</button>
+      <button class="sim-btn" data-preset="SALINE_INTRUSION">Saline Ground Water</button>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

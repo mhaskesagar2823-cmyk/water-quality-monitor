@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQUA SCAN - Hardware Connection & Dual Water Quality Reports</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .layout-container {
+      max-width: 1300px;
+      margin: 1.5rem auto 3rem;
+      padding: 0 1.5rem;
+    }
+    
+    /* Role Selector Banner */
+    .role-switcher-bar {
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border: 1px solid #334155;
+    }
+
+    /* Hardware Connection Hub */
+    .hardware-hub-card {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid #1e293b;
+    }
+
+    .hw-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .hw-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #38bdf8;
+    }
+
+    .hw-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .hw-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hw-details-box {
+      background: #1e293b;
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .hw-detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+    }
+
+    .hw-detail-label {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .hw-detail-val {
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    /* Terminal Console */
+    .terminal-box {
+      background: #000000;
+      border-radius: var(--radius-md);
+      border: 1px solid #334155;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 200px;
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: #64748b;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
+      font-family: monospace;
+    }
+
+    .terminal-body {
+      flex: 1;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #34d399;
+      line-height: 1.5;
+    }
+
+    .terminal-body div {
+      white-space: nowrap;
+    }
+
+    /* Quick Test Controls */
+    .quick-test-bar {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    /* Section Title */
+    .reports-section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* Dual Reports Grid */
+    .dual-reports-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 950px) {
+      .dual-reports-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .report-sheet {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      border: 1px solid #e2e8f0;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .report-sheet:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .report-sheet-header {
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .rural-sheet .report-sheet-header {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border-bottom-color: #bbf7d0;
+    }
+
+    .mining-sheet .report-sheet-header {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-bottom-color: #bae6fd;
+    }
+
+    .report-badge-top {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .rural-sheet .report-badge-top { color: #047857; }
+    .mining-sheet .report-badge-top { color: #0369a1; }
+
+    .report-sheet-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 0.2rem;
+    }
+
+    .report-sheet-body {
+      padding: 1.75rem;
+    }
+
+    /* QR Code Card inside report */
+    .qr-banner-box {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .qr-img-slot {
+      width: 120px;
+      height: 120px;
+      background: #ffffff;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .qr-img-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .qr-info-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .qr-info-text p {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+      line-height: 1.4;
+    }
+
+    /* Telemetry Report Table */
+    .report-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.88rem;
+    }
+
+    .report-data-table tr {
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .report-data-table td {
+      padding: 0.6rem 0.25rem;
+    }
+
+    .report-data-table td:first-child {
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .report-data-table td:last-child {
+      text-align: right;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .report-verdict-badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .verdict-safe { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .verdict-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .verdict-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    .report-sheet-footer {
+      padding: 1.25rem 1.75rem;
+      border-top: 1px solid #e2e8f0;
+      background: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Minimal Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon">💧</div>
+        <div>
+          <div class="brand-title">
+            AQUA SCAN
+            <span class="brand-badge" id="header-role-badge">HARDWARE &amp; DUAL REPORTS</span>
+          </div>
+          <div class="brand-sub">SIH26218 • Team Embedded Minds • Bluetooth Module Prototype</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="live-indicator" id="connection-badge">
+          <span class="live-dot"></span> Bluetooth Telemetry Stream
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout-container">
+
+    <!-- ROLE SWITCHER TOGGLE BAR -->
+    <div class="role-switcher-bar">
+      <div>
+        <strong style="font-size:0.95rem; color:#38bdf8;">👤 Select View Role:</strong>
+        <span style="font-size:0.8rem; color:#94a3b8; margin-left:0.5rem;">(Switches interface dynamically)</span>
+      </div>
+      <div style="display:flex; gap:0.75rem;">
+        <button id="btn-role-all" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem; border-color:#475569; color:#f8fafc;" onclick="switchRole('all')">View All (Default)</button>
+        <button id="btn-role-school" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem; border-color:#10b981; color:#34d399;" onclick="switchRole('school')">🏫 School Officials Portal</button>
+        <button id="btn-role-gov" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem; border-color:#0284c7; color:#38bdf8;" onclick="switchRole('gov')">🏛️ Government Water Authorities</button>
+      </div>
+    </div>
+
+    <!-- SMS Notification Status Feedback Box -->
+    <div id="sms-status-toast" style="display:none; background:#064e3b; color:#d1fae5; border:1px solid #059669; padding:0.75rem 1rem; border-radius:var(--radius-md); margin-bottom:1.5rem; font-size:0.85rem; font-weight:600;">
+     📱 SMS Dispatch Log: <span id="sms-toast-msg">Alert notifications routed successfully to authorities.</span>
+   </div>
+
+    <!-- 1. HARDWARE CONNECTION & TELEMETRY HUB (Visible to Gov / All) -->
+    <section class="hardware-hub-card" id="hardware-hub-section">
+      
+      <div class="hw-header-row">
+        <div class="hw-title">
+          <span>📡 ESP32 Hardware &amp; Bluetooth Connection</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div id="hw-status-badge" class="live-indicator">
+            <span class="live-dot"></span> CONNECTED (Bluetooth SPP Active)
+          </div>
+          <button id="toggleLinkBtn" class="btn btn-outline" style="padding:0.35rem 0.75rem; font-size:0.78rem; color:#f8fafc; border-color:#475569; opacity:0.6; cursor:not-allowed;" disabled title="Manual override disabled. Status is strictly hardware-driven.">
+            Hardware Linked (Auto)
+          </button>
+        </div>
+      </div>
+
+      <div class="hw-grid">
+        
+        <!-- Hardware Info & Actuators -->
+        <div class="hw-details-box">
+          <div class="hw-detail-item">
+            <span class="hw-detail-label">Hardware Controller:</span>
+            <span class="hw-detail-val" id="hw-device-name">AquaScan-SIH26218 (ESP32)</span>
+          </div>
+          <div class="hw-detail-item">
+            <span class="hw-detail-label">Connection Channel:</span>
+            <span class="hw-detail-val" id="hw-port-name">COM4 (Bluetooth SPP)</span>
+          </div>
+          <div class="hw-detail-item">
+            <span class="hw-detail-label">Connected Sensors:</span>
+            <span class="hw-detail-val" style="color:#38bdf8;">pH, Turbidity, TDS, Temp, HeavyMetal</span>
+          </div>
+          
+          <hr style="border:0; border-top:1px solid #334155; margin:0.25rem 0;">
+
+          <!-- Actuator Controls -->
+          <div class="hw-detail-item">
+            <span class="hw-detail-label">Motorized Ball Valve:</span>
+          <div>
+            <span class="valve-pill valve-open valve-state-text" style="font-size:0.8rem; padding:0.2rem 0.6rem;">OPEN</span>
+            <button class="btn btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#f87171; border-color:#ef4444; margin-left:0.4rem;" data-valve-action="CLOSED">Trip Shutoff</button>
+            <button class="btn btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#34d399; border-color:#10b981;" data-valve-action="OPEN">Open</button>
+          </div>
+          </div>
+
+          <div class="hw-detail-item">
+            <span class="hw-detail-label">Detachable Sample Unit:</span>
+          <div>
+            <button class="btn btn-outline" id="trigger-sample-btn" style="padding:3px 8px; font-size:0.72rem; color:#38bdf8; border-color:#0284c7;">
+            🧪 Draw 100ml Sample
+          </button>
+          </div>
+          </div>
+        </div>
+
+        <!-- Raw Serial Console Monitor -->
+        <div>
+          <div class="terminal-box">
+            <div class="terminal-header">
+            <span>LIVE BLUETOOTH SERIAL TELEMETRY [115200 BAUD]</span>
+            <span>PARSER: JSON (ASCII)</span>
+          </div>
+            <div class="terminal-body" id="serial-terminal-body">
+            <div>[00:00:01] [INFO] Bluetooth serial link established...</div>
+            <div>[00:00:02] [RX] {"ph":7.20,"turb":2.10,"tds":430.0,"temp":26.5,"metal":0.008}</div>
+          </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Test Toolbar -->
+      <div class="quick-test-bar">
+        <span style="font-size:0.82rem; font-weight:700; color:#94a3b8;">🧪 Test Sensor Scenarios:</span>
+        <div class="sim-controls-group">
+          <button class="sim-btn active" data-preset="NORMAL_SAFE">Safe Water (WQI: 86)</button>
+          <button class="sim-btn" data-preset="MONSOON_SILT">Monsoon Silt (High Turbidity)</button>
+          <button class="sim-btn" data-preset="MINING_TOXIC_LEAK" style="color:#f87171; border-color:#ef4444;">
+          Mining Toxic Leach (Trip Valve Cutoff!)
+        </button>
+          <button class="sim-btn" data-preset="SALINE_INTRUSION">High Salinity (TDS: 1580)</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 2. THE TWO GENERATED REPORTS WITH QR CODES -->
+    <h2 class="reports-section-title" id="reports-section-heading">
+      <span>📄 Two Types of Water Quality Reports with QR Codes</span>
+    </h2>
+
+    <div class="dual-reports-grid">
+
+      <!-- REPORT 1: RURAL AREA & SCHOOL REPORT (School Officials View) -->
+      <div class="report-sheet rural-sheet" id="report-school-card">
+        <div>
+          <div class="report-sheet-header">
+            <div>
+            <span class="report-badge-top">School Officials Portal (SMS Recipient: 7039639168)</span>
+            <h3 class="report-sheet-title">🏫 Rural Area &amp; School Safety Bulletin</h3>
+          </div>
+            <span class="report-verdict-badge verdict-safe" id="r-report-verdict">😊 SAFE TO DRINK</span>
+          </div>
+
+          <div class="report-sheet-body">
+            
+            <!-- QR Code Section -->
+          <div class="qr-banner-box">
+            <div class="qr-img-slot">
+            <img src="/api/qr/rural" alt="Rural School Report QR Code" />
+          </div>
+            <div class="qr-info-text">
+            <h4>Public Safety QR Code</h4>
+            <p>Scan for instant contamination warnings &amp; public safety advisory notices for staff and students.</p>
+            <span style="font-size:0.75rem; color:#047857; font-weight:700;">SMS Alert Line: +91 7039639168</span>
+          </div>
+          </div>
+
+          <!-- Parameters Table (Minimalist for School Officials) -->
+          <table class="report-data-table">
+            <tbody>
+            <tr>
+              <td>Water Quality Index (WQI)</td>
+              <td id="r-wqi-val" style="color:#047857; font-size:1.05rem;">86 / 100</td>
+            </tr>
+            <tr>
+              <td>General Water Status</td>
+              <td id="r-status-val" style="color:#047857;">SAFE</td>
+            </tr>
+            <tr>
+              <td>Contamination Warning Sign</td>
+              <td id="r-contamination-val" style="color:#047857;">NOT DETECTED</td>
+            </tr>
+            <tr>
+              <td>School Supply Valve Status</td>
+              <td id="r-valve-val" style="color:#047857;">OPEN</td>
+            </tr>
+            </tbody>
+          </table>
+
+        </div>
+        </div>
+
+        <div class="report-sheet-footer">
+          <a href="/rural.html" class="btn btn-success" style="font-size:0.85rem; padding:0.5rem 1rem;">
+          Open School Dashboard →
+        </a>
+        <button class="btn btn-outline" style="font-size:0.85rem; padding:0.5rem 1rem;" onclick="window.open('/rural.html','_blank')">
+          🖨️ Print School Report
+        </button>
+        </div>
+      </div>
+
+      <!-- REPORT 2: OFFICIAL MINING REGULATORY REPORT (Gov Authorities View) -->
+      <div class="report-sheet mining-sheet" id="report-gov-card">
+        <div>
+          <div class="report-sheet-header">
+            <div>
+            <span class="report-badge-top">Gov Authorities Portal (SMS Recipient: 9321823899)</span>
+            <h3 class="report-sheet-title">⛏️ Official Regulatory &amp; Sample Collection Dispatch</h3>
+          </div>
+            <span class="report-verdict-badge verdict-safe" id="m-report-verdict">COMPLIANT (BIS 10500)</span>
+        </div>
+
+        <div class="report-sheet-body">
+          
+          <!-- QR Code Section with Map Navigation Payload -->
+        <div class="qr-banner-box">
+          <div class="qr-img-slot">
+          <img src="/api/qr/mining" alt="Mining Regulatory Report QR Code" />
+        </div>
+        <div class="qr-info-text">
+        <h4>Field Dispatch &amp; Map QR Code</h4>
+        <p>Scan with smartphone to launch Google Maps navigation directly to collection site.</p>
+        <span style="font-size:0.75rem; color:#0284c7; font-weight:700;">📍 Location: Zilla Parishad Primary School (19.1234, 73.1234)</span><br>
+        <span style="font-size:0.75rem; color:#0284c7; font-weight:700;">SMS Dispatch Line: +91 9321823899</span>
+        </div>
+        </div>
+
+        <!-- Parameters Table (Comprehensive for Government Authorities) -->
+        <table class="report-data-table">
+          <tbody>
+            <tr>
+            <td>Statutory Water Index (WQI)</td>
+            <td id="m-wqi-val" style="color:#0284c7; font-size:1.05rem;">86 / 100</td>
+          </tr>
+          <tr>
+            <td>Statutory Water Status</td>
+            <td id="m-status-val" style="color:#0284c7;">SAFE</td>
+          </tr>
+          <tr>
+            <td>pH Component (SEN0161)</td>
+            <td id="m-ph-val">7.2 (Std: 6.5-8.5)</td>
+          </tr>
+          <tr>
+            <td>Turbidity (SEN0189)</td>
+            <td id="m-turb-val">2.1 NTU (Max: 5.0)</td>
+          </tr>
+          <tr>
+            <td>TDS (SEN0244)</td>
+            <td id="m-tds-val">430 mg/L (Max: 500)</td>
+          </tr>
+          <tr>
+            <td>Water Temperature (DS18B20)</td>
+            <td id="m-temp-val">26.5 °C</td>
+          </tr>
+          <tr>
+            <td>Heavy Metal Toxicity (Colorimetric)</td>
+            <td id="m-metal-val">0.008 mg/L (Cutoff: 0.010)</td>
+          </tr>
+          <tr>
+            <td>Sample Collection Readiness</td>
+            <td id="m-sample-val" style="font-family:monospace; color:#0284c7;">Ready for Collection</td>
+          </tr>
+          </tbody>
+        </table>
+
+      </div>
+      </div>
+
+      <div class="report-sheet-footer">
+        <a href="/mining.html" class="btn btn-primary" style="font-size:0.85rem; padding:0.5rem 1rem;">
+        Open Mining SCADA →
+      </a>
+      <button class="btn btn-outline" style="font-size:0.85rem; padding:0.5rem 1rem;" onclick="window.open('/mining.html','_blank')">
+      🖨️ Export Audit Dossier
+      </button>
+      </div>
+    </div>
+
+    </div>
+
+  </main>
+
+  <footer style="text-align:center; padding:1.5rem; color:#64748b; font-size:0.85rem; border-top:1px solid #e2e8f0; background:#ffffff;">
+    AQUA SCAN • Smart Real-Time Water Contamination Detection &amp; Automatic Supply Protection • SIH26218
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Role switcher logic for dynamic UI layout filtering and SMS simulation tracking
+    function switchRole(role) {
+      const url = new URL(window.location);
+      if (role === 'all') {
+        url.searchParams.delete('role');
+      } else {
+        url.searchParams.set('role', role);
+      }
+      window.history.replaceState({}, '', url);
+      applyRoleView(role);
+    }
+
+    function applyRoleView(role) {
+      const hardwareHub = document.getElementById('hardware-hub-section');
+      const schoolCard = document.getElementById('report-school-card');
+      const govCard = document.getElementById('report-gov-card');
+      const headerBadge = document.getElementById('header-role-badge');
+      const sectionHeading = document.getElementById('reports-section-heading');
+      const toast = document.getElementById('sms-status-toast');
+      const toastMsg = document.getElementById('sms-toast-msg');
+
+      // Highlight active button state
+      document.querySelectorAll('.role-switcher-bar .btn').forEach(b => b.style.background = 'transparent');
+      if (role === 'school') {
+        document.getElementById('btn-role-school').style.background = '#064e3b';
+        hardwareHub.style.display = 'none';
+        schoolCard.style.display = 'flex';
+        govCard.style.display = 'none';
+        headerBadge.innerText = 'SCHOOL OFFICIALS PORTAL (SMS: 7039639168)';
+        sectionHeading.style.display = 'none';
+        toast.style.display = 'block';
+        toastMsg.innerText = 'Active SMS Watchdog active for School Officials (+91 7039639168).';
+      } else if (role === 'gov') {
+        document.getElementById('btn-role-gov').style.background = '#0369a1';
+        hardwareHub.style.display = 'block';
+        schoolCard.style.display = 'none';
+        govCard.style.display = 'flex';
+        headerBadge.innerText = 'GOV WATER AUTHORITIES PORTAL (SMS: 9321823899)';
+        sectionHeading.style.display = 'flex';
+        toast.style.display = 'block';
+        toastMsg.innerText = 'Active SMS Dispatch Line armed for Government Water Authorities (+91 9321823899) with GPS coordinates (19.1234, 73.1234).';
+      } else {
+        document.getElementById('btn-role-all').style.background = '#334155';
+        hardwareHub.style.display = 'block';
+        schoolCard.style.display = 'flex';
+        govCard.style.display = 'flex';
+        headerBadge.innerText = 'HARDWARE & DUAL REPORTS';
+        sectionHeading.style.display = 'flex';
+        toast.style.display = 'none';
+      }
+    }
+
+    // Auto-detect role parameter on window load
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const role = params.get('role') || 'all';
+      applyRoleView(role);
+    });
+  </script>
+</body>
+</html>

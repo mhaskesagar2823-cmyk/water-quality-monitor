@@ -1,0 +1,306 @@
+/* AQUA SCAN - Rural School & Community Stylesheet */
+.rural-body {
+  background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 400px);
+  color: #1e293b;
+}
+
+.rural-container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* School Banner */
+.school-banner {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid #dcfce7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.school-info h1 {
+  font-size: 1.8rem;
+  color: #065f46;
+  font-weight: 800;
+}
+
+.school-info p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+.school-meta-pills {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.school-qr-badge {
+  text-align: center;
+  background: #f8fafc;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed #94a3b8;
+}
+
+.school-qr-badge img {
+  width: 90px;
+  height: 90px;
+  display: block;
+  margin: 0 auto 0.25rem;
+  border-radius: 4px;
+}
+
+.school-qr-badge span {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Big Hero Status Card */
+.hero-verdict-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+  border: 2px solid #10b981;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.hero-verdict-card.status-safe {
+  border-color: #10b981;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.hero-verdict-card.status-warning {
+  border-color: #f59e0b;
+  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15);
+}
+
+.hero-verdict-card.status-danger {
+  border-color: #ef4444;
+  background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);
+  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.2);
+  animation: danger-glow 2s infinite;
+}
+
+@keyframes danger-glow {
+  0%, 100% { border-color: #ef4444; }
+  50% { border-color: #991b1b; }
+}
+
+.verdict-emoji {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.verdict-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.status-safe .verdict-title { color: #047857; }
+.status-warning .verdict-title { color: #b45309; }
+.status-danger .verdict-title { color: #b91c1c; }
+
+.verdict-desc {
+  font-size: 1.15rem;
+  max-width: 750px;
+  margin: 0.75rem auto 1.5rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Key Metrics Grid */
+.hero-stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-val-large {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.valve-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+.valve-open {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.valve-closed {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  animation: pulse-red 1.5s infinite;
+}
+
+/* 5 Sensor Cards for Students & Teachers */
+.section-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sensor-grid-friendly {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.friendly-card {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.friendly-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.card-icon-top {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.friendly-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.friendly-card-subtitle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.friendly-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.friendly-unit {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.friendly-status-chip {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.chip-good { background: #dcfce7; color: #166534; }
+.chip-warn { background: #fef3c7; color: #92400e; }
+.chip-bad { background: #fee2e2; color: #991b1b; }
+
+/* Guidelines Box */
+.guidance-box {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 2rem;
+}
+
+.guidance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.guidance-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.guidance-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.guidance-text h4 {
+  font-size: 0.95rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.guidance-text p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
