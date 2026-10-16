@@ -3,103 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Water Quality Report</title>
+  <title>AQUA SCAN - Mobile Water Quality Report</title>
   <style>
     body {
-      background-color: #1e1e24;
+      background-color: #0f172a;
       color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 1.5rem;
       line-height: 1.6;
     }
+    .report-card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+      color: #38bdf8;
+      margin-top: 0;
       border-bottom: 1px solid #334155;
       padding-bottom: 0.75rem;
-      margin-top: 0;
     }
-    p {
-      color: #cbd5e1;
-      font-size: 0.95rem;
-      margin-bottom: 1.5rem;
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #334155;
     }
-    ul {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
+    .data-row:last-child {
+      border-bottom: none;
     }
-    li {
-      background: #2a2a35;
-      margin-bottom: 0.75rem;
-      padding: 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
+    .label {
+      color: #94a3b8;
+      font-weight: 600;
     }
-    strong {
-      color: #38bdf8;
+    .val {
+      font-weight: 800;
     }
-    .status-warning strong { color: #f59e0b; }
-    .status-danger strong { color: #ef4444; }
-    .status-safe strong { color: #10b981; }
+    .status-safe { color: #10b981; }
+    .status-warning { color: #f59e0b; }
+    .status-danger { color: #ef4444; }
   </style>
 </head>
 <body>
-
-  <h1 id="report-title">Water Quality Report Context</h1>
-  <p>Based on the associated water scan details (<span id="report-type" style="font-family:monospace; color:#94a3b8;">AQUA SCAN LIVE REPORT</span>), here is a breakdown of the detected parameters:</p>
-
-  <ul id="report-list">
-    <!-- Populated by JavaScript -->
-  </ul>
+  <div class="report-card">
+    <h1>Live Scan Report</h1>
+    <div class="data-row"><span class="label">Status</span><span class="val" id="val-status">Loading...</span></div>
+    <div class="data-row"><span class="label">WQI Score</span><span class="val" id="val-wqi">-</span></div>
+    <div class="data-row"><span class="label">pH Level</span><span class="val" id="val-ph">-</span></div>
+    <div class="data-row"><span class="label">Turbidity</span><span class="val" id="val-turb">-</span></div>
+    <div class="data-row"><span class="label">TDS</span><span class="val" id="val-tds">-</span></div>
+    <div class="data-row"><span class="label">Temperature</span><span class="val" id="val-temp">-</span></div>
+    <div class="data-row"><span class="label">Heavy Metals</span><span class="val" id="val-metal">-</span></div>
+  </div>
 
   <script>
-    // Read the data sent through the URL link
-    const params = new URLSearchParams(window.location.search);
-    
-    const type = params.get('type') || 'Unknown';
-    const status = params.get('status') || 'N/A';
-    const wqi = params.get('wqi') || '0';
-    const ph = parseFloat(params.get('ph') || '0');
-    const turb = parseFloat(params.get('turb') || '0');
-    const tds = parseFloat(params.get('tds') || '0');
-    const temp = params.get('temp') || '0';
-    const metal = parseFloat(params.get('metal') || '0');
+    const SUPABASE_URL = 'https://fzqvjvcpvilmzlniadfn.supabase.co/rest/v1';
+    const SUPABASE_KEY = 'sb_publishable_vHuqJuAhBDkzyRMnIFvQeA_3ASoVoHd';
 
-    document.getElementById('report-type').textContent = type.toUpperCase() + ' PORTAL';
+    async function fetchReportData() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/sensor_readings?select=*&order=id.desc&limit=1`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        if (!res.ok) throw new Error('Failed to fetch telemetry');
+        const rows = await res.json();
+        if (!rows || rows.length === 0) return;
 
-    // Format pH context
-    let phContext = "Normal";
-    if (ph < 6.5) phContext = "Acidic; ideal is 6.5 to 8.5";
-    if (ph > 8.5) phContext = "Elevated/alkaline; ideal is 6.5 to 8.5";
+        const row = rows[0];
+        const ph = parseFloat(row.ph_level ?? 7.0);
+        const turb = parseFloat(row.turbidity ?? 1.0);
+        const tds = parseFloat(row.tds_value ?? 150.0);
+        const temp = parseFloat(row.temperature ?? 25.0);
+        const metal = parseFloat(row.heavymetal ?? row.heavyMetal ?? 0.005);
 
-    // Format Turbidity context
-    let turbContext = "Normal/low cloudiness";
-    if (turb > 5.0) turbContext = "High cloudiness/silt detected";
+        let status = 'SAFE';
+        let score = 95;
+        if (ph < 6.5 || ph > 8.5 || turb > 5.0 || tds > 500) {
+          status = 'WARNING';
+          score = 65;
+        }
+        if (ph < 5.5 || ph > 9.5 || turb > 10.0 || tds > 1000 || metal > 0.010) {
+          status = 'HAZARDOUS';
+          score = 30;
+        }
 
-    // Format TDS context
-    let tdsContext = "Within acceptable drinking water limits";
-    if (tds > 500) tdsContext = "Elevated mineral content";
+        const statusEl = document.getElementById('val-status');
+        statusEl.textContent = status;
+        if (status === 'SAFE') statusEl.className = 'val status-safe';
+        else if (status === 'WARNING') statusEl.className = 'val status-warning';
+        else statusEl.className = 'val status-danger';
 
-    // Format Metal context
-    let metalContext = "None detected / Safe";
-    if (metal > 0.010) metalContext = "DANGER: Toxic levels detected";
+        document.getElementById('val-wqi').textContent = score + '/100';
+        document.getElementById('val-ph').textContent = ph;
+        document.getElementById('val-turb').textContent = turb + ' NTU';
+        document.getElementById('val-tds').textContent = tds + ' mg/L';
+        document.getElementById('val-temp').textContent = temp + ' °C';
+        document.getElementById('val-metal').textContent = metal + ' mg/L';
+      } catch (err) {
+        console.error('Error loading report:', err);
+        document.getElementById('val-status').textContent = 'Error loading data';
+      }
+    }
 
-    // Determine status color class
-    let statusClass = 'status-safe';
-    if (status === 'WARNING') statusClass = 'status-warning';
-    if (status === 'HAZARDOUS' || status === 'CONTAMINATED') statusClass = 'status-danger';
-
-    const listHtml = `
-      <li class="${statusClass}"><strong>Status:</strong> ${status} (WQI Score: ${wqi}/100)</li>
-      <li><strong>pH:</strong> ${ph} <span style="color:#94a3b8;">(${phContext})</span></li>
-      <li><strong>Turbidity:</strong> ${turb} NTU <span style="color:#94a3b8;">(${turbContext})</span></li>
-      <li><strong>TDS:</strong> ${tds} mg/L <span style="color:#94a3b8;">(${tdsContext})</span></li>
-      <li><strong>Temperature:</strong> ${temp} °C</li>
-      <li><strong>Heavy Metals:</strong> ${metal} mg/L <span style="color:#94a3b8;">(${metalContext})</span></li>
-    `;
-
-    document.getElementById('report-list').innerHTML = listHtml;
+    fetchReportData();
   </script>
 </body>
 </html>
