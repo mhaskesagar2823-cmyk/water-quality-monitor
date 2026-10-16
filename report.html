@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Quality Report</title>
+  <style>
+    body {
+      background-color: #1e1e24;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.75rem;
+      margin-top: 0;
+    }
+    p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      background: #2a2a35;
+      margin-bottom: 0.75rem;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    strong {
+      color: #38bdf8;
+    }
+    .status-warning strong { color: #f59e0b; }
+    .status-danger strong { color: #ef4444; }
+    .status-safe strong { color: #10b981; }
+  </style>
+</head>
+<body>
+
+  <h1 id="report-title">Water Quality Report Context</h1>
+  <p>Based on the associated water scan details (<span id="report-type" style="font-family:monospace; color:#94a3b8;">AQUA SCAN LIVE REPORT</span>), here is a breakdown of the detected parameters:</p>
+
+  <ul id="report-list">
+    <!-- Populated by JavaScript -->
+  </ul>
+
+  <script>
+    // Read the data sent through the URL link
+    const params = new URLSearchParams(window.location.search);
+    
+    const type = params.get('type') || 'Unknown';
+    const status = params.get('status') || 'N/A';
+    const wqi = params.get('wqi') || '0';
+    const ph = parseFloat(params.get('ph') || '0');
+    const turb = parseFloat(params.get('turb') || '0');
+    const tds = parseFloat(params.get('tds') || '0');
+    const temp = params.get('temp') || '0';
+    const metal = parseFloat(params.get('metal') || '0');
+
+    document.getElementById('report-type').textContent = type.toUpperCase() + ' PORTAL';
+
+    // Format pH context
+    let phContext = "Normal";
+    if (ph < 6.5) phContext = "Acidic; ideal is 6.5 to 8.5";
+    if (ph > 8.5) phContext = "Elevated/alkaline; ideal is 6.5 to 8.5";
+
+    // Format Turbidity context
+    let turbContext = "Normal/low cloudiness";
+    if (turb > 5.0) turbContext = "High cloudiness/silt detected";
+
+    // Format TDS context
+    let tdsContext = "Within acceptable drinking water limits";
+    if (tds > 500) tdsContext = "Elevated mineral content";
+
+    // Format Metal context
+    let metalContext = "None detected / Safe";
+    if (metal > 0.010) metalContext = "DANGER: Toxic levels detected";
+
+    // Determine status color class
+    let statusClass = 'status-safe';
+    if (status === 'WARNING') statusClass = 'status-warning';
+    if (status === 'HAZARDOUS' || status === 'CONTAMINATED') statusClass = 'status-danger';
+
+    const listHtml = `
+      <li class="${statusClass}"><strong>Status:</strong> ${status} (WQI Score: ${wqi}/100)</li>
+      <li><strong>pH:</strong> ${ph} <span style="color:#94a3b8;">(${phContext})</span></li>
+      <li><strong>Turbidity:</strong> ${turb} NTU <span style="color:#94a3b8;">(${turbContext})</span></li>
+      <li><strong>TDS:</strong> ${tds} mg/L <span style="color:#94a3b8;">(${tdsContext})</span></li>
+      <li><strong>Temperature:</strong> ${temp} °C</li>
+      <li><strong>Heavy Metals:</strong> ${metal} mg/L <span style="color:#94a3b8;">(${metalContext})</span></li>
+    `;
+
+    document.getElementById('report-list').innerHTML = listHtml;
+  </script>
+</body>
+</html>
