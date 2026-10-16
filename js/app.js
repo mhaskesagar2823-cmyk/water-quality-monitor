@@ -145,6 +145,9 @@ const AquaApp = {
         this.updateMiningUI(data);
       } else {
         this.updateLandingUI(data);
+        // Also update QR codes on the landing page
+        this.updateRuralUI(data);
+        this.updateMiningUI(data);
       }
     } catch (err) {
       console.warn('[AquaScan] Cloud Telemetry sync error: ', err);
@@ -272,6 +275,14 @@ const AquaApp = {
     this.setChip('rural-tds-chip', telemetry.tds <= 500, 'Balanced Minerals', 'High Minerals');
     this.setChip('rural-temp-chip', telemetry.temperature >= 20 && telemetry.temperature <= 30, 'Optimal Cool', 'Warm/Cold');
     this.setChip('rural-metal-chip', telemetry.heavyMetal <= 0.010, 'Zero Toxic Runoff', 'TOXIC CONTAMINATION');
+
+    // --- Dynamic Real-Time QR Code Generation for Rural ---
+    const ruralQrText = `💧 AQUA SCAN LIVE REPORT (Rural)\nStatus: ${wqi.waterStatus}\nWQI Score: ${wqi.score}/100\n----------------\npH: ${telemetry.ph}\nTurbidity: ${telemetry.turbidity} NTU\nTDS: ${telemetry.tds} mg/L\nTemp: ${telemetry.temperature} °C\nHeavy Metals: ${telemetry.heavyMetal} mg/L`;
+    const ruralQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ruralQrText)}`;
+    
+    document.querySelectorAll('img[alt="School Notice QR Code"], img[alt="Rural School Report QR Code"]').forEach(img => {
+      if (img.src !== ruralQrUrl) img.src = ruralQrUrl;
+    });
   },
 
   updateMiningUI: function (data) {
@@ -320,6 +331,14 @@ const AquaApp = {
     this.updateComplianceRow('comp-tds', telemetry.tds <= 500.0, telemetry.tds + ' mg/L');
     this.updateComplianceRow('comp-temp', telemetry.temperature >= 20 && telemetry.temperature <= 30, telemetry.temperature + ' °C');
     this.updateComplianceRow('comp-metal', telemetry.heavyMetal <= 0.010, telemetry.heavyMetal + ' mg/L');
+
+    // --- Dynamic Real-Time QR Code Generation for Mining ---
+    const miningQrText = `⛏️ AQUA SCAN SCADA (Mining)\nStatus: ${wqi.waterStatus}\nValve State: ${systemState.valveState}\n----------------\nHeavy Metal: ${telemetry.heavyMetal} mg/L\npH: ${telemetry.ph}\nTurbidity: ${telemetry.turbidity} NTU\nTDS: ${telemetry.tds} mg/L\nTemp: ${telemetry.temperature} °C`;
+    const miningQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(miningQrText)}`;
+    
+    document.querySelectorAll('img[alt="Mining Regulatory Report QR Code"]').forEach(img => {
+      if (img.src !== miningQrUrl) img.src = miningQrUrl;
+    });
   },
 
   updateComplianceRow: function (rowId, isPass, val) {
