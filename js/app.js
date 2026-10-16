@@ -145,7 +145,6 @@ const AquaApp = {
         this.updateMiningUI(data);
       } else {
         this.updateLandingUI(data);
-        // Also update QR codes on the landing page
         this.updateRuralUI(data);
         this.updateMiningUI(data);
       }
@@ -276,10 +275,9 @@ const AquaApp = {
     this.setChip('rural-temp-chip', telemetry.temperature >= 20 && telemetry.temperature <= 30, 'Optimal Cool', 'Warm/Cold');
     this.setChip('rural-metal-chip', telemetry.heavyMetal <= 0.010, 'Zero Toxic Runoff', 'TOXIC CONTAMINATION');
 
-    // --- Dynamic Real-Time QR Code Generation for Rural ---
-    const ruralBaseUrl = 'https://mhaskesagar2823-cmyk.github.io/water-quality-monitor/report.html';
-    const ruralParams = new URLSearchParams({ type: 'Rural', status: wqi.waterStatus, wqi: wqi.score, ph: telemetry.ph, turb: telemetry.turbidity, tds: telemetry.tds, temp: telemetry.temperature, metal: telemetry.heavyMetal });
-    const ruralQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ruralBaseUrl + '?' + ruralParams.toString())}`;
+    // --- Clean QR Code Generation (URL Only) ---
+    const reportUrl = 'https://mhaskesagar2823-cmyk.github.io/water-quality-monitor/report.html';
+    const ruralQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(reportUrl)}`;
     
     document.querySelectorAll('img[alt="School Notice QR Code"], img[alt="Rural School Report QR Code"]').forEach(img => {
       if (img.src !== ruralQrUrl) img.src = ruralQrUrl;
@@ -333,10 +331,9 @@ const AquaApp = {
     this.updateComplianceRow('comp-temp', telemetry.temperature >= 20 && telemetry.temperature <= 30, telemetry.temperature + ' °C');
     this.updateComplianceRow('comp-metal', telemetry.heavyMetal <= 0.010, telemetry.heavyMetal + ' mg/L');
 
-    // --- Dynamic Real-Time QR Code Generation for Mining ---
-    const miningBaseUrl = 'https://mhaskesagar2823-cmyk.github.io/water-quality-monitor/report.html';
-    const miningParams = new URLSearchParams({ type: 'Mining', status: wqi.waterStatus, wqi: wqi.score, ph: telemetry.ph, turb: telemetry.turbidity, tds: telemetry.tds, temp: telemetry.temperature, metal: telemetry.heavyMetal });
-    const miningQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(miningBaseUrl + '?' + miningParams.toString())}`;
+    // --- Clean QR Code Generation (URL Only) ---
+    const reportUrl = 'https://mhaskesagar2823-cmyk.github.io/water-quality-monitor/report.html';
+    const miningQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(reportUrl)}`;
     
     document.querySelectorAll('img[alt="Mining Regulatory Report QR Code"]').forEach(img => {
       if (img.src !== miningQrUrl) img.src = miningQrUrl;
