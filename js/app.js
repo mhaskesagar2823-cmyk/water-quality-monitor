@@ -277,8 +277,9 @@ const AquaApp = {
     this.setChip('rural-metal-chip', telemetry.heavyMetal <= 0.010, 'Zero Toxic Runoff', 'TOXIC CONTAMINATION');
 
     // --- Dynamic Real-Time QR Code Generation for Rural ---
-    const ruralQrText = `💧 AQUA SCAN LIVE REPORT (Rural)\nStatus: ${wqi.waterStatus}\nWQI Score: ${wqi.score}/100\n----------------\npH: ${telemetry.ph}\nTurbidity: ${telemetry.turbidity} NTU\nTDS: ${telemetry.tds} mg/L\nTemp: ${telemetry.temperature} °C\nHeavy Metals: ${telemetry.heavyMetal} mg/L`;
-    const ruralQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ruralQrText)}`;
+    const ruralBaseUrl = 'https://mhaskesagar2823-cmyk.github.io/water-quality-monitor/report.html';
+    const ruralParams = new URLSearchParams({ type: 'Rural', status: wqi.waterStatus, wqi: wqi.score, ph: telemetry.ph, turb: telemetry.turbidity, tds: telemetry.tds, temp: telemetry.temperature, metal: telemetry.heavyMetal });
+    const ruralQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ruralBaseUrl + '?' + ruralParams.toString())}`;
     
     document.querySelectorAll('img[alt="School Notice QR Code"], img[alt="Rural School Report QR Code"]').forEach(img => {
       if (img.src !== ruralQrUrl) img.src = ruralQrUrl;
@@ -333,8 +334,9 @@ const AquaApp = {
     this.updateComplianceRow('comp-metal', telemetry.heavyMetal <= 0.010, telemetry.heavyMetal + ' mg/L');
 
     // --- Dynamic Real-Time QR Code Generation for Mining ---
-    const miningQrText = `⛏️ AQUA SCAN SCADA (Mining)\nStatus: ${wqi.waterStatus}\nValve State: ${systemState.valveState}\n----------------\nHeavy Metal: ${telemetry.heavyMetal} mg/L\npH: ${telemetry.ph}\nTurbidity: ${telemetry.turbidity} NTU\nTDS: ${telemetry.tds} mg/L\nTemp: ${telemetry.temperature} °C`;
-    const miningQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(miningQrText)}`;
+    const miningBaseUrl = 'https://mhaskesagar2823-cmyk.github.io/water-quality-monitor/report.html';
+    const miningParams = new URLSearchParams({ type: 'Mining', status: wqi.waterStatus, wqi: wqi.score, ph: telemetry.ph, turb: telemetry.turbidity, tds: telemetry.tds, temp: telemetry.temperature, metal: telemetry.heavyMetal });
+    const miningQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(miningBaseUrl + '?' + miningParams.toString())}`;
     
     document.querySelectorAll('img[alt="Mining Regulatory Report QR Code"]').forEach(img => {
       if (img.src !== miningQrUrl) img.src = miningQrUrl;
