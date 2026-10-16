@@ -392,9 +392,10 @@ const AquaApp = {
     document.querySelectorAll('.sim-btn[data-preset]').forEach(btn => {
       btn.addEventListener('click', () => {
         const preset = btn.dataset.preset;
-        if (preset === 'SAFE') pushSimulatedData(7.2, 1.5, 120);
-        if (preset === 'WARNING') pushSimulatedData(6.1, 6.5, 540);
-        if (preset === 'DANGER') pushSimulatedData(4.5, 15.0, 1100, 26.0, 0.04);
+        if (preset === 'NORMAL_SAFE') pushSimulatedData(7.2, 1.5, 120);
+        if (preset === 'MONSOON_SILT') pushSimulatedData(7.1, 16.5, 240); 
+        if (preset === 'MINING_TOXIC_LEAK') pushSimulatedData(4.5, 15.0, 1100, 26.0, 0.04); 
+        if (preset === 'SALINE_INTRUSION') pushSimulatedData(7.5, 2.0, 1580); 
       });
     });
 
